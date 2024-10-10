@@ -1,32 +1,106 @@
-[
-    {
-        "pavadinimas": "1984",
-        "autorius": "George Orwell",
-        "metai": 1949,
-        "zanras": "Distopija",
-        "kiekis": 5,
-        "isduota": 0,
-        "isduota_iki": null,
-        "veluoja": false
-    },
-    {
-        "pavadinimas": "To Kill a Mockingbird",
-        "autorius": "Harper Lee",
-        "metai": 1960,
-        "zanras": "Drama",
-        "kiekis": 4,
-        "isduota": 0,
-        "isduota_iki": null,
-        "veluoja": false
-    },
-    {
-        "pavadinimas": "The Great Gatsby",
-        "autorius": "F. Scott Fitzgerald",
-        "metai": 1925,
-        "zanras": "Klasika",
-        "kiekis": 2,
-        "isduota": 0,
-        "isduota_iki": null,
-        "veluoja": false
-    }
-]
+{
+    "knygos": [
+        {
+            "knygos_kodas": "001",
+            "pavadinimas": "Modernūs laikai",
+            "leidimo_metai": 1900,
+            "zanras": "Fantastika",
+            "vietos": [
+                {
+                    "tipas": "knygyne",
+                    "kiekis": 3
+                },
+                {
+                    "tipas": "pas_skaitytoja",
+                    "vartotojas": {
+                        "vartotojo_numeris": "A123",
+                        "paemimo_data": "2023-09-01"
+                    }
+                }
+            ]
+        },
+        {
+            "knygos_kodas": "002",
+            "pavadinimas": "Peilis Rankoje",
+            "leidimo_metai": 2018,
+            "zanras": "Detektyvas",
+            "vietos": [
+                {
+                    "tipas": "knygyne",
+                    "kiekis": 2
+                },
+                {
+                    "tipas": "pas_skaitytoja",
+                    "user": {
+                        "vartotojo_numeris": "B456",
+                        "paemimo_data": "2023-08-15"
+                    }
+                }
+            ]
+        },
+        {
+            "knygos_kodas": "003",
+            "pavadinimas": "Paslaptingas Miškas",
+            "leidimo_metai": 2021,
+            "zanras": "Nuotykių",
+            "vietos": [
+                {
+                    "tipas": "knygyne",
+                    "kiekis": 5
+                },
+                {
+                    "tipas": "pas_skaitytoja",
+                    "vartotojas": {
+                        "vartotojo_numeris": "C789",
+                        "paemimo_data": "2023-07-20"
+                    }
+                }
+            ]
+        },
+        {
+            "knygos_kodas": "004",
+            "pavadinimas": "Žvaigždžių Karai",
+            "leidimo_metai": 2019,
+            "zanras": "Mokslinė Fantastika",
+            "vietos": [
+                {
+                    "tipas": "knygyne",
+                    "kiekis": 4
+                },
+                {
+                    "tipas": "pas_skaitytoja",
+                    "vartotojas": {
+                        "vartotojo_numeris": "D012",
+                        "paemimo_data": "2023-06-10"
+                    }
+                },
+                {
+                    "tipas": "pas_skaitytoja",
+                    "vartotojas": {
+                        "vartotojo_numeris": "E345",
+                        "paemimo_data": "2023-06-15"
+                    }
+                },
+                {
+                    "tipas": "pas_skaitytoja",
+                    "vartotojas": {
+                        "vartotojo_numeris": "F678",
+                        "paemimo_data": "2023-06-20"
+                    }
+                }
+            ]
+        },
+        {
+            "knygos_kodas": "005",
+            "pavadinimas": "Modernus Pasaulis",
+            "leidimo_metai": 1900,
+            "zanras": "Fantastika",
+            "vietos": [
+                {
+                    "tipas": "knygyne",
+                    "kiekis": 5
+                }
+            ]
+        }
+    ]
+}

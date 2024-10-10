@@ -1,1 +1,14 @@
-[]
+[
+    {
+        "knygos_kodas": "069",
+        "pavadinimas": "Modernus Pasaulis",
+        "leidimo_metai": 1000,
+        "zanras": "Fantastika",
+        "vietos": [
+            {
+                "tipas": "knygyne",
+                "kiekis": 5
+            }
+        ]
+    }
+]
