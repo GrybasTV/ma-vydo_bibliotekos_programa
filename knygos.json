@@ -1,0 +1,32 @@
+[
+    {
+        "pavadinimas": "1984",
+        "autorius": "George Orwell",
+        "metai": 1949,
+        "zanras": "Distopija",
+        "kiekis": 5,
+        "isduota": 0,
+        "isduota_iki": null,
+        "veluoja": false
+    },
+    {
+        "pavadinimas": "To Kill a Mockingbird",
+        "autorius": "Harper Lee",
+        "metai": 1960,
+        "zanras": "Drama",
+        "kiekis": 4,
+        "isduota": 0,
+        "isduota_iki": null,
+        "veluoja": false
+    },
+    {
+        "pavadinimas": "The Great Gatsby",
+        "autorius": "F. Scott Fitzgerald",
+        "metai": 1925,
+        "zanras": "Klasika",
+        "kiekis": 2,
+        "isduota": 0,
+        "isduota_iki": null,
+        "veluoja": false
+    }
+]
