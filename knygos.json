@@ -100,8 +100,11 @@
             "zanras": "Dokumentika",
             "vietos": [
                 {
-                    "tipas": "knygyne",
-                    "kiekis": 100
+                    "tipas": "pas_skaitytoja",
+                    "vartotojas": {
+                        "vartotojo_numeris": "I242",
+                        "paemimo_data": "2024-10-14"
+                    }
                 }
             ]
         }
