@@ -44,6 +44,7 @@
     "darbuotojai": [
         {
             "darbuotojo_kodas": "D001",
+            "slaptazodis": "123",
             "vardas": "Ona",
             "pavarde": "Onaitė",
             "asmens_kodas_lt": "55509240066",
@@ -52,6 +53,7 @@
         },
         {
             "darbuotojo_kodas": "D002",
+            "slaptazodis": "123",
             "vardas": "Kazys",
             "pavarde": "Kazlauskas",
             "asmens_kodas_lt": "66609240067",
@@ -60,6 +62,7 @@
         },
         {
             "darbuotojo_kodas": "1",
+            "slaptazodis": "123",
             "vardas": "Asta",
             "pavarde": "Astauskienė",
             "asmens_kodas_lt": "77709240068",

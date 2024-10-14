@@ -14,25 +14,8 @@
                     }
                 },
                 {
-                    "tipas": "pas_skaitytoja",
-                    "vartotojas": {
-                        "vartotojo_numeris": "Y055",
-                        "paemimo_data": "2024-10-14"
-                    }
-                },
-                {
-                    "tipas": "pas_skaitytoja",
-                    "vartotojas": {
-                        "vartotojo_numeris": "Y055",
-                        "paemimo_data": "2024-10-14"
-                    }
-                },
-                {
-                    "tipas": "pas_skaitytoja",
-                    "vartotojas": {
-                        "vartotojo_numeris": "Y055",
-                        "paemimo_data": "2024-10-14"
-                    }
+                    "tipas": "knygyne",
+                    "kiekis": 1
                 }
             ]
         },
@@ -63,14 +46,7 @@
             "vietos": [
                 {
                     "tipas": "knygyne",
-                    "kiekis": 4
-                },
-                {
-                    "tipas": "pas_skaitytoja",
-                    "vartotojas": {
-                        "vartotojo_numeris": "Y055",
-                        "paemimo_data": "2024-10-14"
-                    }
+                    "kiekis": 5
                 }
             ]
         },
@@ -94,7 +70,14 @@
             "vietos": [
                 {
                     "tipas": "knygyne",
-                    "kiekis": 5
+                    "kiekis": 4
+                },
+                {
+                    "tipas": "pas_skaitytoja",
+                    "vartotojas": {
+                        "vartotojo_numeris": "Y055",
+                        "paemimo_data": "2024-10-14"
+                    }
                 }
             ]
         },
@@ -107,6 +90,21 @@
                 {
                     "tipas": "knygyne",
                     "kiekis": 0
+                }
+            ]
+        },
+        {
+            "knygos_kodas": "069",
+            "pavadinimas": "Kamasutra",
+            "leidimo_metai": 1410,
+            "zanras": "Dokumentika",
+            "vietos": [
+                {
+                    "tipas": "pas_skaitytoja",
+                    "vartotojas": {
+                        "vartotojo_numeris": "I242",
+                        "paemimo_data": "2024-10-14"
+                    }
                 }
             ]
         }
