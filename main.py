@@ -11,23 +11,23 @@ import random # reikalingas sugeneruoti vartotojo numerį
 import string #  reikalingas sugeneruoti vartotojo numerį
 from datetime import datetime
 
-
-
-
-
-
-
 # Atidarome knygos.json failą kuriame saugoma bibliotekos duomenys ir nuskaitome duomenis
 
 try:
     with open('./knygos.json', 'r', encoding='utf-8') as file:
         knygos = json.load(file)
 except FileNotFoundError:
-    print("Failas 'knygos.json' nerastas.")
+    print("Klaida")
+    if debuginimas == True:    
+        print("Failas 'knygos.json' nerastas.")
 except json.JSONDecodeError as e:
-    print(f"JSON formatavimo klaida faile 'knygos.json': {e}")
+    print("Klaida")
+    if debuginimas == True:    
+        print(f"JSON formatavimo klaida faile 'knygos.json': {e}")
 except Exception as e:
-    print(f"Nenumatyta klaida, kreipkitės į adminsitratorių: {e}")
+    print("Nenumatyta klaida, kreipkitės į adminsitratorių:")
+    if debuginimas == True:
+        print(f"Nenumatyta klaida: {e}")
 
 # atidarome asmensduomenys.json failą kuriame saugoma skaitytojų ir darbuotojų duomenis, nuskaitome juos:
 try:
@@ -37,11 +37,17 @@ try:
         darbuotojai = asmensduomenys.get('darbuotojai', [])
 
 except FileNotFoundError:
-    print("Failas 'asmensduomenys.json' nerastas.")
+    print()
+    if debuginimas == True:
+        print("Failas 'asmensduomenys.json' nerastas.")
 except json.JSONDecodeError as e:
-    print(f"JSON formatavimo klaida faile 'asmensduomenys.json': {e}")
+    print("Klaida")
+    if debuginimas == True:        
+        print(f"JSON formatavimo klaida faile 'asmensduomenys.json': {e}")
 except Exception as e:
-    print(f"Nenumatyta klaida, kreipkitės į adminsitratorių: {e}")    
+        print("Klaida")
+        if debuginimas == True:
+            print(f"Nenumatyta klaida: {e}") 
 
 
 while True:
@@ -137,8 +143,10 @@ while True:
                                                 else:
                                                     print("  Pas skaitytojus: 0 vnt.")
                                         except Exception as e:
-                                            print(f"Klaida apdorojant įrašą: {e}")
-
+                                            if debuginimas == True:
+                                                print(f"Klaida apdorojant įrašą: {e}")
+                                            else:
+                                                continue
                                     if not rasta_knyga:
                                         print("Nerasta jokia knyga pagal nurodytą frazę.")                                
 
@@ -195,7 +203,10 @@ while True:
                                     except ValueError:
                                         print("Įvesta netinkama reikšmė, prašome įvesti skaičių.")
                                     except Exception as e:
-                                        print(f"Nenumatyta klaida, kreipkitės į administratorių: {e}")
+                                        if debuginimas == True:
+                                            print(f"Nenumatyta klaida, kreipkitės į administratorių: {e}")
+                                        else:
+                                            continue
                                 elif perziura_pasirinkimas == 4:
                                     break 
                         elif darbuotojo_pasirinkimas == 3:
@@ -401,7 +412,10 @@ while True:
                                                                     knygyne_kiekis += vieta['kiekis']
                                                             print(f"  Knygyne: {knygyne_kiekis} vnt.")
                                                     except Exception as e:
-                                                        print(f"Klaida apdorojant įrašą: {e}")
+                                                        if debuginimas == True:
+                                                            print(f"Klaida apdorojant įrašą: {e}")
+                                                        else:
+                                                            continue
 
                                                 if not rasta_knyga:
                                                     print("Nerasta jokia knyga pagal nurodytą frazę.")                                
