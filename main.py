@@ -7,9 +7,10 @@ max_velavimas = 365 # maksimalus vėlavimas dienomis
 
 # importuojame modulius
 import json 
-from datetime import datetime 
 import random # reikalingas sugeneruoti vartotojo numerį
 import string #  reikalingas sugeneruoti vartotojo numerį
+from datetime import datetime
+
 
 
 
@@ -55,7 +56,7 @@ while True:
             if darbuotojo_kodas in [darbuotojas['darbuotojo_kodas'] for darbuotojas in darbuotojai]:
                 while True:
                     # Darbuotojo pasirinkimai
-                    darbuotojo_pasirinkimas = int(input("Pasirinkite: \n1 - Įvesti naują knygą\n2 - Esamos knygos\n3 - Esamos knygos\n4 - Atsijungti\n"))
+                    darbuotojo_pasirinkimas = int(input("Pasirinkite: \n1 - Įvesti naują knygą\n2 - Esamos knygos\n3 - Vėluojančios knygos\n4 - Atsijungti\n"))
                     
                     # Įvesti naują knygą
                     if darbuotojo_pasirinkimas == 1:
@@ -195,19 +196,26 @@ while True:
                             elif    perziura_pasirinkimas == 4:
                                 break 
                     elif darbuotojo_pasirinkimas == 3:
-                        kasveluoja = []
+                        visi_veluojantys_skaitytojai = []
                         for knyga in knygos['knygos']:
                             for vieta in knyga['vietos']:
-                                if vieta['tipas'] == 'pas_skaitytoja':
+                                if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta:
                                     vartotojas = vieta['vartotojas']
-                                    if (datetime.now() - datetime.strptime(vartotojas['paemimo_data'], '%Y-%m-%d')).days > max_velavimas:
-                                        kasveluoja.append(f"Knygos pavadinimas: {knyga['pavadinimas']}, Vartotojo numeris: {vartotojas['vartotojo_numeris']}, Paėmimo data: {vartotojas['paemimo_data']}")
-                        if kasveluoja:
-                            print("Vėluojančios knygos:")
-                            for info in kasveluoja:
-                                print(f"  {info}")
+                                    paemimo_data = datetime.strptime(vartotojas['paemimo_data'], '%Y-%m-%d')
+                                    if (datetime.now() - paemimo_data).days > max_velavimas:
+                                        visi_veluojantys_skaitytojai.append(vartotojas)
+                        if visi_veluojantys_skaitytojai:
+                            print("Vėluojantys skaitytojai:")
+                            for skaitytojas in visi_veluojantys_skaitytojai:
+                                print(f"  - Vartotojo numeris: {skaitytojas['vartotojo_numeris']}, Paėmimo data: {skaitytojas['paemimo_data']}")                                         
+                        # Asmens duomenys iš asmenduomenys.json
+                        for skaitytojas in visi_veluojantys_skaitytojai:
+                            for asmuo in asmensduomenys['skaitytojai']:
+                                if skaitytojas['vartotojo_numeris'] == asmuo['vartotojo_numeris']:
+                                    print(f"  - Vardas: {asmuo['vardas']}, Pavardė: {asmuo['pavarde']}, Kontaktinis telefonas: {asmuo['kontaktinis_telefonas']}, El. paštas: {asmuo['el_pastas']}")
+                                    break
                         else:
-                            print("Vėluojančių knygų nėra.")
+                            print("Daugiau nėra vėluojančių skaitytojų.")                  
                     elif darbuotojo_pasirinkimas == 4:
                         break  # Reikia pataisyti į double break                                                          
                     else:
