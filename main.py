@@ -55,7 +55,7 @@ while True:
             if darbuotojo_kodas in [darbuotojas['darbuotojo_kodas'] for darbuotojas in darbuotojai]:
                 while True:
                     # Darbuotojo pasirinkimai
-                    darbuotojo_pasirinkimas = int(input("Pasirinkite: \n1 - Įvesti naują knygą\n2 - Esamos knygos\n3 - Atsijungti\n"))
+                    darbuotojo_pasirinkimas = int(input("Pasirinkite: \n1 - Įvesti naują knygą\n2 - Esamos knygos\n3 - Esamos knygos\n4 - Atsijungti\n"))
                     
                     # Įvesti naują knygą
                     if darbuotojo_pasirinkimas == 1:
@@ -193,8 +193,22 @@ while True:
                                 except Exception as e:
                                     print(f"Nenumatyta klaida, kreipkitės į administratorių: {e}")
                             elif    perziura_pasirinkimas == 4:
-                                break  
+                                break 
                     elif darbuotojo_pasirinkimas == 3:
+                        kasveluoja = []
+                        for knyga in knygos['knygos']:
+                            for vieta in knyga['vietos']:
+                                if vieta['tipas'] == 'pas_skaitytoja':
+                                    vartotojas = vieta['vartotojas']
+                                    if (datetime.now() - datetime.strptime(vartotojas['paemimo_data'], '%Y-%m-%d')).days > max_velavimas:
+                                        kasveluoja.append(f"Knygos pavadinimas: {knyga['pavadinimas']}, Vartotojo numeris: {vartotojas['vartotojo_numeris']}, Paėmimo data: {vartotojas['paemimo_data']}")
+                        if kasveluoja:
+                            print("Vėluojančios knygos:")
+                            for info in kasveluoja:
+                                print(f"  {info}")
+                        else:
+                            print("Vėluojančių knygų nėra.")
+                    elif darbuotojo_pasirinkimas == 4:
                         break  # Reikia pataisyti į double break                                                          
                     else:
                         print("Neteisingas pasirinkimas. Bandykite dar kartą.")
