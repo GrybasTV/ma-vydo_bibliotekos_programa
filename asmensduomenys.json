@@ -3,16 +3,6 @@
         {
             "vardas": "Jonas",
             "pavarde": "Jonaitis",
-            "paimtos_knygos": [
-                {
-                    "knygos_pavadinimas": "Knyga1",
-                    "paemimo_data": "2023-10-01"
-                },
-                {
-                    "knygos_pavadinimas": "Knyga2",
-                    "paemimo_data": "2023-10-05"
-                }
-            ],
             "vartotojo_numeris": "A123",
             "asmens_kodas_lt": "33309240064",
             "kontaktinis_telefonas": "+370 111 11111",
@@ -21,16 +11,34 @@
         {
             "vardas": "Petras",
             "pavarde": "Petraitis",
-            "paimtos_knygos": [
-                {
-                    "knygos_pavadinimas": "Knyga3",
-                    "paemimo_data": "2023-09-20"
-                }
-            ],
             "vartotojo_numeris": "B456",
             "asmens_kodas_lt": "44409240065",
             "kontaktinis_telefonas": "+370 222 22222",
             "el_pastas": "petras.petraitis@example.com"
+        },
+        {
+            "vardas": "Tomas",
+            "pavarde": "Augulis",
+            "vartotojo_numeris": "C789",
+            "asmens_kodas_lt": "3900151114",
+            "kontaktinis_telefonas": "+37062383626",
+            "el_pastas": "pag@one.lt"
+        },
+        {
+            "vardas": "Tomas",
+            "pavarde": "Pagelis",
+            "vartotojo_numeris": "I242",
+            "asmens_kodas_lt": "3900014451",
+            "kontaktinis_telefonas": "+3704574125",
+            "el_pastas": "gkok@one.lt"
+        },
+        {
+            "vardas": "Kazys",
+            "pavarde": "Skirma",
+            "vartotojo_numeris": "Y055",
+            "asmens_kodas_lt": "34844115",
+            "kontaktinis_telefonas": "+37044722442",
+            "el_pastas": "lolas@one.lt"
         }
     ],
     "darbuotojai": [
@@ -58,5 +66,5 @@
             "kontaktinis_telefonas": "+370 555 55555",
             "el_pastas": "asta.astauskiene@example.com"
         }
-    ]    
+    ]
 }

@@ -10,5 +10,17 @@
                 "kiekis": 5
             }
         ]
+    },
+    {
+        "knygos_kodas": "069",
+        "pavadinimas": "Kamasutra",
+        "leidimo_metai": 1410,
+        "zanras": "Dokumentika",
+        "vietos": [
+            {
+                "tipas": "knygyne",
+                "kiekis": 100
+            }
+        ]
     }
 ]
