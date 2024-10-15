@@ -39,6 +39,30 @@
             "asmens_kodas_lt": "34844115",
             "kontaktinis_telefonas": "+37044722442",
             "el_pastas": "lolas@one.lt"
+        },
+        {
+            "vardas": "Žydrūnas",
+            "pavarde": "Ilgauskas",
+            "vartotojo_numeris": "T279",
+            "asmens_kodas_lt": "394424511",
+            "kontaktinis_telefonas": "+30754514112",
+            "el_pastas": "ilgaugas@one.lt"
+        },
+        {
+            "vardas": "",
+            "pavarde": "",
+            "vartotojo_numeris": "K743",
+            "asmens_kodas_lt": "",
+            "kontaktinis_telefonas": "",
+            "el_pastas": ""
+        },
+        {
+            "vardas": "Paulius",
+            "pavarde": "M",
+            "vartotojo_numeris": "G755",
+            "asmens_kodas_lt": "3941154445",
+            "kontaktinis_telefonas": "+370458552",
+            "el_pastas": "koks@one.lt"
         }
     ],
     "darbuotojai": [

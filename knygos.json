@@ -14,8 +14,11 @@
                     }
                 },
                 {
-                    "tipas": "knygyne",
-                    "kiekis": 1
+                    "tipas": "pas_skaitytoja",
+                    "vartotojas": {
+                        "vartotojo_numeris": "B456",
+                        "paemimo_data": "2024-10-15"
+                    }
                 }
             ]
         },
@@ -27,14 +30,7 @@
             "vietos": [
                 {
                     "tipas": "knygyne",
-                    "kiekis": 2
-                },
-                {
-                    "tipas": "pas_skaitytoja",
-                    "user": {
-                        "vartotojo_numeris": "B456",
-                        "paemimo_data": "2023-08-15"
-                    }
+                    "kiekis": 3
                 }
             ]
         },
@@ -95,7 +91,7 @@
         },
         {
             "knygos_kodas": "069",
-            "pavadinimas": "Kamasutra",
+            "pavadinimas": "Samurajai",
             "leidimo_metai": 1410,
             "zanras": "Dokumentika",
             "vietos": [
@@ -105,6 +101,30 @@
                         "vartotojo_numeris": "I242",
                         "paemimo_data": "2024-10-14"
                     }
+                }
+            ]
+        },
+        {
+            "knygos_kodas": "666",
+            "pavadinimas": "Velno Tomas",
+            "leidimo_metai": 18756,
+            "zanras": "Klasika",
+            "vietos": [
+                {
+                    "tipas": "knygyne",
+                    "kiekis": 24
+                }
+            ]
+        },
+        {
+            "knygos_kodas": "452",
+            "pavadinimas": "Aelex",
+            "leidimo_metai": 2012,
+            "zanras": "Komedija",
+            "vietos": [
+                {
+                    "tipas": "knygyne",
+                    "kiekis": 1
                 }
             ]
         }

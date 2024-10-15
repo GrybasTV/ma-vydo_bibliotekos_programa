@@ -1,511 +1,604 @@
 # Nustatymai
+MAX_VELAVIMAS = 365  # Maksimalus vėlavimas dienomis
+DEBUGINIMAS = True
 
-max_velavimas = 365 # maksimalus vėlavimas dienomis
-debuginimas = True
-
-
-
-# importuojame modulius
-import json 
-import random # reikalingas sugeneruoti vartotojo numerį
-import string #  reikalingas sugeneruoti vartotojo numerį
+# Importuojame modulius
+import json
+import random
+import string
 from datetime import datetime
 
-# Atidarome knygos.json failą kuriame saugoma bibliotekos duomenys ir nuskaitome duomenis
+# Failų pavadinimai
+KNYGOS_FAILAS = './knygos.json'
+ASMENS_DUOMENYS_FAILAS = './asmensduomenys.json'
+UTELEZUOTOS_FAILAS = './utelizuotos.json'
 
-try:
-    with open('./knygos.json', 'r', encoding='utf-8') as file:
-        knygos = json.load(file)
-except FileNotFoundError:
-    print("Klaida")
-    if debuginimas == True:    
-        print("Failas 'knygos.json' nerastas.")
-except json.JSONDecodeError as e:
-    print("Klaida")
-    if debuginimas == True:    
-        print(f"JSON formatavimo klaida faile 'knygos.json': {e}")
-except Exception as e:
-    print("Nenumatyta klaida, kreipkitės į adminsitratorių:")
-    if debuginimas == True:
-        print(f"Nenumatyta klaida: {e}")
-
-# atidarome asmensduomenys.json failą kuriame saugoma skaitytojų ir darbuotojų duomenis, nuskaitome juos:
-try:
-    with open('./asmensduomenys.json', 'r', encoding='utf-8') as file:
-        asmensduomenys = json.load(file)
-        skaitytojai = asmensduomenys.get('skaitytojai', [])
-        darbuotojai = asmensduomenys.get('darbuotojai', [])
-
-except FileNotFoundError:
-    print()
-    if debuginimas == True:
-        print("Failas 'asmensduomenys.json' nerastas.")
-except json.JSONDecodeError as e:
-    print("Klaida")
-    if debuginimas == True:        
-        print(f"JSON formatavimo klaida faile 'asmensduomenys.json': {e}")
-except Exception as e:
-        print("Klaida")
-        if debuginimas == True:
-            print(f"Nenumatyta klaida: {e}") 
-
-
-while True:
+def load_json(file_path):
     try:
-        # Paklausiame vartotojo, kas jis yra
-        role = input("Sveiki atvykę į biblioteką! \n1 - Darbuotojas\n2 - Skaitytojas\n3 - Viso Gero\n")
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print("Klaida")
+        if DEBUGINIMAS:
+            print(f"Failas '{file_path}' nerastas.")
+    except json.JSONDecodeError as e:
+        print("Klaida")
+        if DEBUGINIMAS:
+            print(f"JSON formatavimo klaida faile '{file_path}': {e}")
+    except Exception as e:
+        print("Nenumatyta klaida, kreipkitės į administratorių:")
+        if DEBUGINIMAS:
+            print(f"Nenumatyta klaida: {e}")
+    return None
+
+def save_json(file_path, data):
+    try:
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print(f"Klaida išsaugant duomenis į '{file_path}': {e}")
+
+def generuoti_vartotojo_numeri(skaitytojai):
+    while True:
+        pirmoji_raide = random.choice(string.ascii_uppercase)
+        trys_skaiciai = ''.join(random.choices(string.digits, k=3))
+        vartotojo_numeris = pirmoji_raide + trys_skaiciai
+        if vartotojo_numeris not in [s['vartotojo_numeris'] for s in skaitytojai]:
+            return vartotojo_numeris
+ 
+
+def autentifikuoti_darbuotoja(darbuotojai):
+    while True:
+        darbuotojo_kodas = input("Įveskite darbuotojo kodą: ")
+        darbuotojas = next((d for d in darbuotojai if d['darbuotojo_kodas'] == darbuotojo_kodas), None)
+        if darbuotojas:
+            darbuotojo_slaptazodis = input("Įveskite darbuotojo slaptažodį: ")
+            if darbuotojo_slaptazodis == darbuotojas['slaptazodis']:
+                print("Sėkmingai prisijungta kaip darbuotojas.")
+                print()
+                return darbuotojas
+            else:
+                print("Neteisingas slaptažodis. Bandykite dar kartą.")
+        else:
+            print("Neteisingas darbuotojo kodas. Bandykite dar kartą.")
+
+def prideti_nauja_knyga(knygos):
+    kodas = input("Įveskite knygos kodą: ")
+    pavadinimas = input("Įveskite knygos pavadinimą: ")
+    try:
+        leidimo_metai = int(input("Įveskite knygos leidimo metus: "))
+        kiekis = int(input("Įveskite knygos kiekį: "))
+    except ValueError:
+        print("Prašome įvesti skaičius.")
+        return
+    zanras = input("Įveskite knygos žanrą: ")
+    vietos = [{"tipas": "knygyne", "kiekis": kiekis}]
+    
+    knygos['knygos'].append({
+        "knygos_kodas": kodas,
+        "pavadinimas": pavadinimas,
+        "leidimo_metai": leidimo_metai,
+        "zanras": zanras,
+        "vietos": vietos
+    })
+    save_json(KNYGOS_FAILAS, knygos)
+    print("Nauja knyga pridėta sėkmingai.")
+
+def perziureti_knygas(knygos):
+    while True:
+        print("\nPasirinkite peržiūros variantą:")
+        print("1 - Visų knygų knygyne sąrašas")
+        print("2 - Paieška")
+        print("3 - Utelizuoti senas knygas")
+        print("4 - Grįžti")
+        try:
+            pasirinkimas = int(input("Pasirinkimas: "))
+        except ValueError:
+            print("Įveskite galiojantį skaičių.")
+            continue
+
+        if pasirinkimas == 1:
+            visos_knygos_sarasas_darbuotoju(knygos)
+        elif pasirinkimas == 2:
+            paieska_knygose_darbuotojui(knygos)
+        elif pasirinkimas == 3:
+            utelizuoti_knygas(knygos)
+        elif pasirinkimas == 4:
+            break
+        else:
+            print("Neteisingas pasirinkimas. Bandykite dar kartą.")
+
+def visos_knygos_sarasas_darbuotoju(knygos):
+    # su asmens duoemninimis
+    for knyga in knygos['knygos']:
+        print(f"Knygos kodas: {knyga['knygos_kodas']}, Pavadinimas: {knyga['pavadinimas']}, "
+              f"Leidimo metai: {knyga['leidimo_metai']}, Žanras: {knyga['zanras']}")
+        knygyne_kiekis = sum(vieta['kiekis'] for vieta in knyga['vietos'] if vieta['tipas'] == 'knygyne')
+        pas_skaitytoja = [v for v in knyga['vietos'] if v['tipas'] == 'pas_skaitytoja' and 'vartotojas' in v]
         
-        # Jei vartotojas yra darbuotojas
-        if role == '1':
-            while True:
-                # Paprašome darbuotojo kodo
-                darbuotojo_kodas = input("Įveskite darbuotojo kodą: ")
+        print(f"  Knygyne: {knygyne_kiekis} vnt.")
+        if pas_skaitytoja:
+            print("  Pas skaitytojus:")
+            for info in pas_skaitytoja:
+                vartotojas = info['vartotojas']
+                print(f"    Vartotojo numeris: {vartotojas['vartotojo_numeris']}, Paėmimo data: {vartotojas['paemimo_data']}")
+        else:
+            print("  Pas skaitytojus: 0 vnt.")
+    input("Paspauskite ENTER, kad grįžti atgal.")
+
+
+def visos_knygos_sarasas_skaitytojui(knygos):
+    # be asmens duomenų
+    for knyga in knygos['knygos']:
+        print(f"Knygos kodas: {knyga['knygos_kodas']}, Pavadinimas: {knyga['pavadinimas']}, "
+              f"Leidimo metai: {knyga['leidimo_metai']}, Žanras: {knyga['zanras']}")
+        knygyne_kiekis = sum(vieta['kiekis'] for vieta in knyga['vietos'] if vieta['tipas'] == 'knygyne')
+        pas_skaitytoja = [v for v in knyga['vietos'] if v['tipas'] == 'pas_skaitytoja' and 'vartotojas' in v]
+        
+        print(f"  Knygyne: {knygyne_kiekis} vnt.")
+        if pas_skaitytoja:
+            print("  Pas skaitytojus:")            
+        else:
+            print("  Pas skaitytojus: 0 vnt.")
+    input("Paspauskite ENTER, kad grįžti atgal.")    
+
+def paieska_knygose_darbuotojui(knygos):
+    paieska = input("Įveskite knygos pavadinimo, žanro, kodo arba išleidimo metų frazę: ").lower()
+    rasta = False
+
+    for knyga in knygos['knygos']:
+        try:
+            if (paieska in knyga['pavadinimas'].lower() or 
+                paieska in knyga['zanras'].lower() or 
+                paieska in knyga['knygos_kodas'].lower() or 
+                paieska in str(knyga['leidimo_metai']).lower()):
                 
-                # Patikriname, ar darbuotojo kodas yra teisingas
-                if darbuotojo_kodas in [darbuotojas['darbuotojo_kodas'] for darbuotojas in darbuotojai]:
-                    # Paprašome darbuotojo slaptažodžio
-                    darbuotojo_slaptazodis = input("Įveskite darbuotojo slaptažodį: ")
-                    
-                    # Patikriname, ar slaptažodis yra teisingas
-                    darbuotojas = next(darbuotojas for darbuotojas in darbuotojai if darbuotojas['darbuotojo_kodas'] == darbuotojo_kodas)
-                    if darbuotojo_slaptazodis != darbuotojas['slaptazodis']:
-                        print("Neteisingas slaptažodis. Bandykite dar kartą.")
-                        continue
-                    if darbuotojo_slaptazodis == darbuotojas['slaptazodis']:
-                        while True:
-                            # Darbuotojo pasirinkimai
-                            darbuotojo_pasirinkimas = int(input("Pasirinkite: \n1 - Įvesti naują knygą\n2 - Esamos knygos\n3 - Vėluojančios knygos\n4 - Atsijungti\n"))
-                            
-                            # Įvesti naują knygą
-                            if darbuotojo_pasirinkimas == 1:
-                                kodas = input("Įveskite knygos kodą: ")
-                                pavadinimas = input("Įveskite knygos pavadinimą: ")
-                                leidimo_metai = int(input("Įveskite knygos leidimo metus: "))
-                                zanras = input("Įveskite knygos žanrą: ")
-                                kiekis = int(input("Įveskite knygos kiekį: "))
-                                vietos = [{"tipas": "knygyne", "kiekis": kiekis}]  # Pagal nutylėjimą tipas yra knygyne su kiekiu                        
-                                
-                                # Pridedame naują knygą į knygos.json
-                                knygos['knygos'].append({
-                                    "knygos_kodas": kodas,
-                                    "pavadinimas": pavadinimas,
-                                    "leidimo_metai": leidimo_metai,
-                                    "zanras": zanras,
-                                    "vietos": vietos
-                                })
-                                with open('knygos.json', 'w', encoding='utf-8') as file:
-                                    json.dump(knygos, file, ensure_ascii=False, indent=4)
-                            
-                            # Peržiūrėti knygas
-                            elif darbuotojo_pasirinkimas == 2:
-                                while True:
-                                    perziura_pasirinkimas = int(input("Pasirinkite: \n1 - Visų knygų knygyne sąrašas\n2 - Paieška\n3 - Utelizuoti senas knygas\n4 - Grįžti\n"))
-                                    # Visų knygų knygyne sąrašas ir tipas kur yra ir kiek
-                                    if perziura_pasirinkimas == 1:
-                                        for knyga in knygos['knygos']:
-                                            print(f"Knygos kodas: {knyga['knygos_kodas']}, Pavadinimas: {knyga['pavadinimas']}, Leidimo metai: {knyga['leidimo_metai']}, Žanras: {knyga['zanras']}")
-                                            knygyne_kiekis = 0
-                                            pas_skaitytoja = []
-                                            for vieta in knyga['vietos']:
-                                                if vieta['tipas'] == 'knygyne':
-                                                    knygyne_kiekis += vieta['kiekis']
-                                                elif vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta:
-                                                    vartotojas = vieta['vartotojas']
-                                                    pas_skaitytoja.append(f"Vartotojo numeris: {vartotojas['vartotojo_numeris']}, Paėmimo data: {vartotojas['paemimo_data']}")
-                                            
-                                            print(f"  Knygyne: {knygyne_kiekis} vnt.")
-                                            if pas_skaitytoja:
-                                                print("  Pas skaitytojus:")
-                                                for info in pas_skaitytoja:
-                                                    print(f"    {info}")
-                                            else:
-                                                print("  Pas skaitytojus: 0 vnt.")
-                                        input("Paspauskite ENTER, kad grįžti atgal")
+                rasta = True
+                print(f"Knygos kodas: {knyga['knygos_kodas']}, Pavadinimas: {knyga['pavadinimas']}, "
+                      f"Leidimo metai: {knyga['leidimo_metai']}, Žanras: {knyga['zanras']}")
+                knygyne_kiekis = sum(vieta['kiekis'] for vieta in knyga['vietos'] if vieta['tipas'] == 'knygyne')
+                pas_skaitytoja = [v for v in knyga['vietos'] if v['tipas'] == 'pas_skaitytoja']
+                
+                print(f"  Knygyne: {knygyne_kiekis} vnt.")
+                if pas_skaitytoja:
+                    print("  Pas skaitytojus:")
+                    for info in pas_skaitytoja:
+                        vartotojas = info['vartotojas']
+                        print(f"    Vartotojo numeris: {vartotojas['vartotojo_numeris']}, Paėmimo data: {vartotojas['paemimo_data']}")
+                else:
+                    print("  Pas skaitytojus: 0 vnt.")
+        except Exception as e:
+            if DEBUGINIMAS:
+                print(f"Klaida apdorojant įrašą: {e}")
+            continue
 
-                                    elif perziura_pasirinkimas == 2:
-                                        paieska = input("Įveskite knygos pavadinimo, žanro, kodo arba išleidimo metų frazę: ")
-                                        rasta_knyga = False  
+    if not rasta:
+        print("Nerasta jokia knyga pagal nurodytą frazę.")
+    input("Paspauskite ENTER, kad grįžti atgal.")
 
-                                        for knyga in knygos['knygos']:
-                                            try:
-                                                if (paieska.lower() in knyga['pavadinimas'].lower() or 
-                                                    paieska.lower() in knyga['zanras'].lower() or 
-                                                    paieska.lower() in knyga['knygos_kodas'].lower() or 
-                                                    paieska.lower() in str(knyga['leidimo_metai']).lower()):
-                                                    
-                                                    rasta_knyga = True  
-                                                    print(f"Knygos kodas: {knyga['knygos_kodas']}, Pavadinimas: {knyga['pavadinimas']}, Leidimo metai: {knyga['leidimo_metai']}, Žanras: {knyga['zanras']}")
-                                                    knygyne_kiekis = 0
-                                                    pas_skaitytoja = []
-                                                    for vieta in knyga['vietos']:
-                                                        if vieta['tipas'] == 'knygyne':
-                                                            knygyne_kiekis += vieta['kiekis']
-                                                        elif vieta['tipas'] == 'pas_skaitytoja':
-                                                            vartotojas = vieta['vartotojas']
-                                                            pas_skaitytoja.append(f"Vartotojo numeris: {vartotojas['vartotojo_numeris']}, Paėmimo data: {vartotojas['paemimo_data']}")
-                                                    
-                                                    print(f"  Knygyne: {knygyne_kiekis} vnt.")
-                                                    if pas_skaitytoja:
-                                                        print("  Pas skaitytojus:")
-                                                        for info in pas_skaitytoja:
-                                                            print(f"    {info}")
-                                                    else:
-                                                        print("  Pas skaitytojus: 0 vnt.")
-                                            except Exception as e:
-                                                if debuginimas == True:
-                                                    print(f"Klaida apdorojant įrašą: {e}")
-                                                else:
-                                                    continue
-                                        if not rasta_knyga:
-                                            print("Nerasta jokia knyga pagal nurodytą frazę.")                                
+def paieska_knygose_skaitytojui(knygos):
+    paieska = input("Įveskite knygos pavadinimo, žanro, kodo arba išleidimo metų frazę: ").lower()
+    rasta = False
 
-                                        input("Paspauskite ENTER, kad grįžti atgal")
+    for knyga in knygos['knygos']:
+        try:
+            if (paieska in knyga['pavadinimas'].lower() or 
+                paieska in knyga['zanras'].lower() or 
+                paieska in knyga['knygos_kodas'].lower() or 
+                paieska in str(knyga['leidimo_metai']).lower()):
+                
+                rasta = True
+                print(f"Knygos kodas: {knyga['knygos_kodas']}, Pavadinimas: {knyga['pavadinimas']}, "
+                      f"Leidimo metai: {knyga['leidimo_metai']}, Žanras: {knyga['zanras']}")
+                knygyne_kiekis = sum(vieta['kiekis'] for vieta in knyga['vietos'] if vieta['tipas'] == 'knygyne')
+                pas_skaitytoja = [v for v in knyga['vietos'] if v['tipas'] == 'pas_skaitytoja']
+                
+                print(f"  Knygyne: {knygyne_kiekis} vnt.")
+                if pas_skaitytoja:
+                    print("  Pas skaitytojus:")
+                    for info in pas_skaitytoja:
+                        vartotojas = info['vartotojas']
+                        print(f"    Vartotojo numeris: {vartotojas['vartotojo_numeris']}, Paėmimo data: {vartotojas['paemimo_data']}")
+                else:
+                    print("  Pas skaitytojus: 0 vnt.")
+        except Exception as e:
+            if DEBUGINIMAS:
+                print(f"Klaida apdorojant įrašą: {e}")
+            continue
 
-                                    # Ištrinti knygas pagal išleidimo metus įvedus metų skaičių. Ištrintos knygos perkeliamos į utelizuotos.json failą
-                                    elif perziura_pasirinkimas == 3:
-                                        try:
-                                            metai = int(input("Įveskite knygos senumą metais, kurias ištrinti: "))
-                                            siandiena = datetime.now().year
+    if not rasta:
+        print("Nerasta jokia knyga pagal nurodytą frazę.")
+    input("Paspauskite ENTER, kad grįžti atgal.")
 
-                                            # Atidarome arba sukuriame 'utelizuotos.json' failą
-                                            try:
-                                                with open('utelizuotos.json', 'r', encoding='utf-8') as file:
-                                                    utelizuotos = json.load(file)
-                                            except FileNotFoundError:
-                                                utelizuotos = []
-                                            except json.JSONDecodeError as e:
-                                                print(f"JSON formatavimo klaida faile 'utelizuotos.json': {e}")
-                                                utelizuotos = []
 
-                                            knygos_utelizuoti = []
+def utelizuoti_knygas(knygos):
+    try:
+        metai = int(input("Įveskite knygos senumą metais, kurias ištrinti: "))
+    except ValueError:
+        print("Įvesta netinkama reikšmė, prašome įvesti skaičių.")
+        return
 
-                                            # Tikriname, kurios knygos turi būti utelizuotos
-                                            for knyga in knygos['knygos']:
-                                                if siandiena - knyga['leidimo_metai'] > metai:
-                                                    knygyne_kiekis = sum(vieta['kiekis'] for vieta in knyga['vietos'] if vieta.get('tipas') == 'knygyne')
-                                                    pas_skaitytoja = any(vieta.get('tipas') == 'pas_skaitytoja' for vieta in knyga['vietos'])
+    siandiena = datetime.now().year
 
-                                                    if knygyne_kiekis > 0 and not pas_skaitytoja:
-                                                        knygos_utelizuoti.append(knyga)
-                                                    elif pas_skaitytoja:
-                                                        print(f"Knyga '{knyga['pavadinimas']}' yra pas skaitytoją ir negali būti utelizuota.")
+    # Įkelti arba sukurti utelizuotos knygos sąrašą
+    utelizuotos = load_json(UTELEZUOTOS_FAILAS) or []
 
-                                            # Jei yra knygų, kurios turi būti utelizuotos
-                                            if knygos_utelizuoti:
-                                                for knyga in knygos_utelizuoti:
-                                                    print(f"Utelizuojama knyga: {knyga['pavadinimas']} (kodas: {knyga['knygos_kodas']})")
-                                                    knygos['knygos'].remove(knyga)
-                                                    utelizuotos.append(knyga)
+    knygos_utelizuoti = []
 
-                                                # Atnaujiname failą 'knygos.json'
-                                                with open('knygos.json', 'w', encoding='utf-8') as file:
-                                                    json.dump(knygos, file, ensure_ascii=False, indent=4)
+    for knyga in knygos['knygos']:
+        if siandiena - knyga['leidimo_metai'] > metai:
+            knygyne_kiekis = sum(vieta['kiekis'] for vieta in knyga['vietos'] if vieta.get('tipas') == 'knygyne')
+            pas_skaitytoja = any(vieta.get('tipas') == 'pas_skaitytoja' for vieta in knyga['vietos'])
 
-                                                # Atnaujiname failą 'utelizuotos.json'
-                                                with open('utelizuotos.json', 'w', encoding='utf-8') as file:
-                                                    json.dump(utelizuotos, file, ensure_ascii=False, indent=4)
+            if knygyne_kiekis > 0 and not pas_skaitytoja:
+                knygos_utelizuoti.append(knyga)
+            elif pas_skaitytoja:
+                print(f"Knyga '{knyga['pavadinimas']}' yra pas skaitytoją ir negali būti utelizuota.")
 
-                                                print(f"Knygos utelizuotos sėkmingai.")
-                                            else:
-                                                print("Nėra knygų, kurias galima utelizuoti pagal nurodytus metų senumą.")
-
-                                        except ValueError:
-                                            print("Įvesta netinkama reikšmė, prašome įvesti skaičių.")
-                                        except Exception as e:
-                                            if debuginimas == True:
-                                                print(f"Nenumatyta klaida, kreipkitės į administratorių: {e}")
-                                            else:
-                                                continue
-                                    elif perziura_pasirinkimas == 4:
-                                        break 
-                            elif darbuotojo_pasirinkimas == 3:
-                                visi_veluojantys_skaitytojai = []
-                                for knyga in knygos['knygos']:
-                                    for vieta in knyga['vietos']:
-                                        if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta:
-                                            vartotojas = vieta['vartotojas']
-                                            paemimo_data = datetime.strptime(vartotojas['paemimo_data'], '%Y-%m-%d')
-                                            if (datetime.now() - paemimo_data).days > max_velavimas:
-                                                visi_veluojantys_skaitytojai.append(vartotojas)
-                                if visi_veluojantys_skaitytojai:
-                                    print("Vėluojantys skaitytojai:")
-                                    for skaitytojas in visi_veluojantys_skaitytojai:
-                                        print(f"  - Vartotojo numeris: {skaitytojas['vartotojo_numeris']}, Paėmimo data: {skaitytojas['paemimo_data']}")                                         
-                                # Asmens duomenys iš asmenduomenys.json
-                                for skaitytojas in visi_veluojantys_skaitytojai:
-                                    for asmuo in asmensduomenys['skaitytojai']:
-                                        if skaitytojas['vartotojo_numeris'] == asmuo['vartotojo_numeris']:
-                                            print(f"  - Vardas: {asmuo['vardas']}, Pavardė: {asmuo['pavarde']}, Kontaktinis telefonas: {asmuo['kontaktinis_telefonas']}, El. paštas: {asmuo['el_pastas']}")
-                                            break
-                                else:
-                                    print("Daugiau nėra vėluojančių skaitytojų.")                  
-                            elif darbuotojo_pasirinkimas == 4:
-                                print("Atsijungiama...")
-                                print("Viso gero..")
-                                exit()                                                     
-                            else:
-                                print("Neteisingas pasirinkimas. Bandykite dar kartą.")
-                                break  
-                else: 
-                    print("Neteisingas darbuotojo kodas. Bandykite dar kartą.")
-                    continue
+    if knygos_utelizuoti:
+        for knyga in knygos_utelizuoti:
+            print(f"Utelizuojama knyga: {knyga['pavadinimas']} (kodas: {knyga['knygos_kodas']})")
+            knygos['knygos'].remove(knyga)
+            utelizuotos.append(knyga)
         
-        # Jei vartotojas yra skaitytojas
-        elif role == '2':
-                while True:
-                    skaitytojo_pasirinkimas = int(input("Pasirinkite: \n1 - Naujo skaitytojo registracija\n2 - Esamas skaitytojas\n3 - Grįžti atgal\n"))
-                    
-                    # Registruotis
-                    if skaitytojo_pasirinkimas == 1:
-                        vardas = input("Įveskite savo vardą: ")
-                        pavarde = input("Įveskite savo pavardę: ")                    
-                        def generuoti_vartotojo_numeri():
-                            pirmoji_raide = random.choice(string.ascii_uppercase)
-                            trys_skaiciai = ''.join(random.choices(string.digits, k=3))
-                            return pirmoji_raide + trys_skaiciai
-                        vartotojo_numeris = generuoti_vartotojo_numeri()
-                        asmens_kodas_lt = input("Įveskite savo asmens kodą: ")
-                        kontaktinis_telefonas = input("Įveskite savo kontaktinį telefoną: ")
-                        el_pastas = input("Įveskite savo el. paštą: ")
+        save_json(KNYGOS_FAILAS, knygos)
+        save_json(UTELEZUOTOS_FAILAS, utelizuotos)
 
-                        # Patikriname, ar vartotojo numeris jau egzistuoja
-                        if vartotojo_numeris in [skaitytojas['vartotojo_numeris'] for skaitytojas in skaitytojai]:
-                            print("Toks vartotojo numeris jau egzistuoja. Bandykite dar kartą.")
-                        else:
-                            naujas_skaitytojas = {
-                                "vardas": vardas,
-                                "pavarde": pavarde,                            
-                                "vartotojo_numeris": vartotojo_numeris,
-                                "asmens_kodas_lt": asmens_kodas_lt,
-                                "kontaktinis_telefonas": kontaktinis_telefonas,
-                                "el_pastas": el_pastas
-                            }
-                            skaitytojai.append(naujas_skaitytojas)
-                            asmensduomenys['skaitytojai'] = skaitytojai
-                            with open('asmensduomenys.json', 'w', encoding='utf-8') as file:
-                                json.dump(asmensduomenys, file, ensure_ascii=False, indent=4)
-                            print("Registracija sėkminga!")
-                            print("Jūsų vartotojo numeris: ", vartotojo_numeris, "Prašome išsisaugoti šį numerį.")
-                            skaitytojai.append(naujas_skaitytojas)
-                    # Esamas skaitytojas
-                    elif skaitytojo_pasirinkimas == 2:
-                        vartotojo_numeris = input("Įveskite savo vartotojo numerį: ")
+        print("Knygos utelizuotos sėkmingai.")
+    else:
+        print("Nėra knygų, kurias galima utelizuoti pagal nurodytus metų senumą.")
 
-                        # Patikriname, ar skaitytojo numeris yra teisingas
-                        if vartotojo_numeris in [skaitytojas['vartotojo_numeris'] for skaitytojas in skaitytojai]:
-                            # Surandame skaitytoją pagal numerį
-                            skaitytojas = next(skaitytojas for skaitytojas in skaitytojai if skaitytojas['vartotojo_numeris'] == vartotojo_numeris)
-                            
-                            # Patikriname, ar skaitytojas turi vėluojančių knygų
-                            veluojancios_knygos = []
-                            for knyga in knygos['knygos']:
-                                for vieta in knyga['vietos']:
-                                    if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta and vieta['vartotojas']['vartotojo_numeris'] == vartotojo_numeris:
-                                        paemimo_data = datetime.strptime(vieta['vartotojas']['paemimo_data'], '%Y-%m-%d')
-                                        if (datetime.now() - paemimo_data).days > max_velavimas:
-                                            veluojancios_knygos.append(knyga['pavadinimas'])
-                            
-                            if veluojancios_knygos:
-                                print("Jūs turite vėluojančių knygų ir negalite pasiimti naujų knygų, kol jų negrąžinsite.")
-                                print("Vėluojančios knygos:")
-                                for knyga in veluojancios_knygos:
-                                    print(f"  - {knyga}")
-                                    ar_grazinti = input("Ar norite grąžinti knygą? (taip/ne): ")
-                                    if ar_grazinti.lower() == 'taip':
-                                        knygos_kodas = input("Įveskite grąžinamos knygos kodą: ")
-                                    else:
-                                        print("Lauksime sugrįžtant ir grąžintant knygą.")
-                                        break
-                                    rasta_knyga = False
-                                    for knyga in knygos['knygos']:
-                                        if knyga['knygos_kodas'] == knygos_kodas:
-                                            for vieta in knyga['vietos']:
-                                                if vieta['tipas'] == 'pas_skaitytoja' and vieta['vartotojas']['vartotojo_numeris'] == vartotojo_numeris:
-                                                    # Pašaliname tik "pas_skaitytoja" įrašą
-                                                    knyga['vietos'].remove(vieta)
+def darbuotojo_menu(darbuotojas, knygos, skaitytojai, darbuotojai):
+    while True:
+        print("\nPasirinkite veiksmą:")
+        print("1 - Įvesti naują knygą")
+        print("2 - Esamos knygos")
+        print("3 - Vėluojančios knygos")
+        print("4 - Atsijungti")
+        try:
+            pasirinkimas = int(input("Pasirinkimas: "))
+        except ValueError:
+            print("Įveskite galiojantį skaičių.")
+            continue
 
-                                                    # Patikriname, ar jau yra įrašas su tipu "knygyne"
-                                                    knygyne_rastas = False
-                                                    for knygos_vieta in knyga['vietos']:
-                                                        if knygos_vieta['tipas'] == 'knygyne':
-                                                            knygos_vieta['kiekis'] += 1
-                                                            knygyne_rastas = True
-                                                            break
+        if pasirinkimas == 1:
+            prideti_nauja_knyga(knygos)
+        elif pasirinkimas == 2:
+            perziureti_knygas(knygos)
+        elif pasirinkimas == 3:
+            patikrinti_velavimus(knygos, skaitytojai)
+        elif pasirinkimas == 4:
+            print("Atsijungiama...")
+            print("Viso gero..")
+            break
+        else:
+            print("Neteisingas pasirinkimas. Bandykite dar kartą.")
 
-                                                    # Jei nėra "knygyne" įrašo, sukurkite naują įrašą su "kiekis": 1
-                                                    if not knygyne_rastas:
-                                                        knyga['vietos'].append({"tipas": "knygyne", "kiekis": 1})
+def registruotis_skaitytojas(skaitytojai, asmensduomenys):
+    # strip() - pašalina tarpus pradžioje ir pabaigoje
+    while True:
+        vardas = input("Įveskite savo vardą: ").strip()
+        if vardas:
+            break
+        print("Vardas negali būti tuščias. Bandykite dar kartą.")
 
-                                                    rasta_knyga = True
-                                                    break
-                                            if rasta_knyga:
-                                                break
-                                    if rasta_knyga:
-                                            with open('knygos.json', 'w', encoding='utf-8') as file:
-                                                json.dump(knygos, file, ensure_ascii=False, indent=4)
-                                            print("Knyga sėkmingai grąžinta.")
-                                            continue
-                                    else:
-                                            print("Nerasta knyga su nurodytu kodu arba ji nėra pas jus.")
+    while True:
+        pavarde = input("Įveskite savo pavardę: ").strip()
+        if pavarde:
+            break
+        print("Pavardė negali būti tuščia. Bandykite dar kartą.")    
 
-                            else:
-                                while True:
-                                    veiksmas = int(input("Pasirinkite: \n1 - Grąžinti knygą\n2 - Knygyno Knygos\n3 - Mano Knygos\n4 - Atgal\n"))
-                                    
-                                    # Grąžinti knygą
-                                    if veiksmas == 1:
-                                        knygos_kodas = input("Įveskite grąžinamos knygos kodą: ")
-                                        rasta_knyga = False
-                                        for knyga in knygos['knygos']:
-                                            if knyga['knygos_kodas'] == knygos_kodas:
-                                                for vieta in knyga['vietos']:
-                                                    if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta and vieta['vartotojas']['vartotojo_numeris'] == vartotojo_numeris:
-                                                        knyga['vietos'] = [
-                                                            vieta for vieta in knyga['vietos']
-                                                            if not (vieta['tipas'] == 'pas_skaitytoja' and vieta['vartotojas']['vartotojo_numeris'] == vartotojo_numeris)
-                                                        ]
-                                                        # Patikriname, ar jau yra įrašas su tipu "knygyne"
-                                                        knygyne_rastas = False
-                                                        for vieta in knyga['vietos']:
-                                                            if vieta['tipas'] == 'knygyne':
-                                                                vieta['kiekis'] += 1
-                                                                knygyne_rastas = True
-                                                                break
-                                                        if not knygyne_rastas:
-                                                            knyga['vietos'].append({"tipas": "knygyne", "kiekis": 1})
-                                                        rasta_knyga = True
-                                                        break
-                                            if rasta_knyga:
-                                                break
-                                        if rasta_knyga:
-                                            with open('knygos.json', 'w', encoding='utf-8') as file:
-                                                json.dump(knygos, file, ensure_ascii=False, indent=4)
-                                            print("Knyga sėkmingai grąžinta.")
-                                            continue
-                                        else:
-                                            print("Nerasta knyga su nurodytu kodu arba ji nėra pas jus.")
-                                    # Grįžti atgal
-                                    elif veiksmas == 2:
-                                        # Peržiūrėti knygas                    
-                                        while True:
-                                            perziura_pasirinkimas = int(input("Pasirinkite: \n1 - Visų knygų knygyne sąrašas\n2 - Paieška\n3 - Pasimti knyga\n4 - Grįžti atgal\n"))
-                                            # Visų knygų knygyne sąrašas ir tipas kur yra ir kiek
-                                            if perziura_pasirinkimas == 1:
-                                                for knyga in knygos['knygos']:
-                                                    print(f"Knygos kodas: {knyga['knygos_kodas']}, Pavadinimas: {knyga['pavadinimas']}, Leidimo metai: {knyga['leidimo_metai']}, Žanras: {knyga['zanras']}")
-                                                    knygyne_kiekis = 0
-                                                    for vieta in knyga['vietos']:
-                                                        if vieta['tipas'] == 'knygyne':
-                                                            knygyne_kiekis += vieta['kiekis']
-                                                        elif vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta:
-                                                            vartotojas = vieta['vartotojas']           
-                                                    print(f"  Knygyne: {knygyne_kiekis} vnt.")
-                                                input("Paspauskite ENTER, kad grįžti atgal")
+    while True:
+        asmens_kodas_lt = input("Įveskite savo asmens kodą: ").strip()
+        if asmens_kodas_lt in [s['asmens_kodas_lt'] for s in skaitytojai]:
+            print("Toks asmens kodas jau egzistuoja. Pabandykite prisijungti..")
+            return
+        if asmens_kodas_lt:
+            break
+        print("Asmens kodas negali būti tuščias. Bandykite dar kartą.")
 
-                                            elif perziura_pasirinkimas == 2:
-                                                paieska = input("Įveskite knygos pavadinimo, žanro, kodo arba išleidimo metų frazę: ")
-                                                rasta_knyga = False  
+    while True:
+        kontaktinis_telefonas = input("Įveskite savo kontaktinį telefoną: ").strip()
+        if kontaktinis_telefonas in [s['kontaktinis_telefonas'] for s in skaitytojai]:
+            print("Toks kontaktinis telefonas jau egzistuoja. Pabandykite prisijungti..")
+            return
+        if kontaktinis_telefonas:
+            break
+        print("Kontaktinis telefonas negali būti tuščias. Bandykite dar kartą.")
 
-                                                for knyga in knygos['knygos']:
-                                                    try:
-                                                        if (paieska.lower() in knyga['pavadinimas'].lower() or 
-                                                            paieska.lower() in knyga['zanras'].lower() or 
-                                                            paieska.lower() in knyga['knygos_kodas'].lower() or 
-                                                            paieska.lower() in str(knyga['leidimo_metai']).lower()):
-                                                            
-                                                            rasta_knyga = True  
-                                                            print(f"Knygos kodas: {knyga['knygos_kodas']}, Pavadinimas: {knyga['pavadinimas']}, Leidimo metai: {knyga['leidimo_metai']}, Žanras: {knyga['zanras']}")
-                                                            knygyne_kiekis = 0
-                                                            for vieta in knyga['vietos']:
-                                                                if vieta['tipas'] == 'knygyne':
-                                                                    knygyne_kiekis += vieta['kiekis']
-                                                            print(f"  Knygyne: {knygyne_kiekis} vnt.")
-                                                    except Exception as e:
-                                                        if debuginimas == True:
-                                                            print(f"Klaida apdorojant įrašą: {e}")
-                                                        else:
-                                                            continue
+    while True:
+        el_pastas = input("Įveskite savo el. paštą: ").strip()
+        if el_pastas in [s['el_pastas'] for s in skaitytojai]:
+            print("Toks el. paštas jau egzistuoja. Pabandykite prisijungti..")
+            return
+        if el_pastas:
+            break  
+        print("El. paštas negali būti tuščias. Bandykite dar kartą.")
 
-                                                if not rasta_knyga:
-                                                    print("Nerasta jokia knyga pagal nurodytą frazę.")                                
+    vartotojo_numeris = generuoti_vartotojo_numeri()    
+    
+    if vartotojo_numeris in [s['vartotojo_numeris'] for s in skaitytojai]:
+        print("Toks vartotojo numeris jau egzistuoja. Pabandykite prisijungti..")
+        return
 
-                                                input("Paspauskite ENTER, kad grįžti atgal")
+    naujas_skaitytojas = {
+        "vardas": vardas,
+        "pavarde": pavarde,
+        "vartotojo_numeris": vartotojo_numeris,
+        "asmens_kodas_lt": asmens_kodas_lt,
+        "kontaktinis_telefonas": kontaktinis_telefonas,
+        "el_pastas": el_pastas
+    }
+    skaitytojai.append(naujas_skaitytojas)
+    asmensduomenys['skaitytojai'] = skaitytojai
+    save_json(ASMENS_DUOMENYS_FAILAS, asmensduomenys)
+    print("Registracija sėkminga!")
+    print(f"Jūsų vartotojo numeris: {vartotojo_numeris}. Prašome išsisaugoti šį numerį.")
 
-                                            # Pasiimti knygą
-                                            elif perziura_pasirinkimas == 3:
-                                                knygos_kodas = input("Įveskite pasiimamos knygos kodą: ")
-                                                rasta_knyga = False
-                                                for knyga in knygos['knygos']:
-                                                    if knyga['knygos_kodas'] == knygos_kodas:
-                                                        for vieta in knyga['vietos']:
-                                                            if vieta['tipas'] == 'knygyne' and vieta['kiekis'] > 0:
-                                                                vieta['kiekis'] -= 1
-                                                                if vieta['kiekis'] == 0:
-                                                                    knyga['vietos'].remove(vieta)
-                                                                knyga['vietos'].append({
-                                                                    "tipas": "pas_skaitytoja",
-                                                                    "vartotojas": {
-                                                                        "vartotojo_numeris": vartotojo_numeris,
-                                                                        "paemimo_data": datetime.now().strftime('%Y-%m-%d')
-                                                                    }
-                                                                })
-                                                                rasta_knyga = True
-                                                                break
-                                                    if rasta_knyga:
-                                                        break
-                                                if rasta_knyga:
-                                                    # Atnaujiname knygos.json failą
-                                                    with open('knygos.json', 'w', encoding='utf-8') as file:
-                                                        json.dump(knygos, file, ensure_ascii=False, indent=4)                                                
-                                                    # Atnaujiname asmensduomenys.json failą
-                                                    asmensduomenys['skaitytojai'] = skaitytojai
-                                                    with open('asmensduomenys.json', 'w', encoding='utf-8') as file:
-                                                        json.dump(asmensduomenys, file, ensure_ascii=False, indent=4)
-                                                    
-                                                    print("Knyga sėkmingai pasiimta.")
-                                                else:
-                                                    print("Nerasta knyga su nurodytu kodu arba nėra laisvų egzempliorių.")
-                                            elif perziura_pasirinkimas == 4:
-                                                break
-                                            else:
-                                                print("Neteisingas pasirinkimas. Bandykite dar kartą.")
-                                                continue                                                
-                                        # Skaitytojo turimos knygos                
-                                    elif veiksmas == 3:                                    
-                                        print("Jūsų paimtos knygos:")
-                                        rasta_knyga = False
-                                        for knyga in knygos['knygos']:
-                                            for vieta in knyga['vietos']:
-                                                if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta and vieta['vartotojas']['vartotojo_numeris'] == vartotojo_numeris:
-                                                    print(f"  - {knyga['pavadinimas']} (kodas: {knyga['knygos_kodas']})")
-                                                    rasta_knyga = True
-                                        if not rasta_knyga:
-                                            print("Jūs neturite jokių knygų.")
-                                        input("Paspauskite ENTER, kad grįžti atgal")
-                                    elif veiksmas == 4:
-                                        break        
-                        else:
-                            print("Neteisingas vartotojo numeris. Bandykite dar kartą.")
-                            break
-                    elif skaitytojo_pasirinkimas == 3:
-                        break
+def grazinti_knyga(knygos, skaitytojai, vartotojo_numeris):
+    knygos_kodas = input("Įveskite grąžinamos knygos kodą: ")
+    rasta_knyga = False
+    for knyga in knygos['knygos']:
+        if knyga['knygos_kodas'] == knygos_kodas:
+            for vieta in knyga['vietos']:
+                if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta and vieta['vartotojas']['vartotojo_numeris'] == vartotojo_numeris:
+                    knyga['vietos'].remove(vieta)
+                    # Atnaujinti knygyno kiekį
+                    knygyne = next((v for v in knyga['vietos'] if v['tipas'] == 'knygyne'), None)
+                    if knygyne:
+                        knygyne['kiekis'] += 1
                     else:
-                        print("Neteisingas pasirinkimas. Bandykite dar kartą.")
-                        continue
+                        knyga['vietos'].append({"tipas": "knygyne", "kiekis": 1})
+                    rasta_knyga = True
+                    break
+            if rasta_knyga:
+                break
 
-        # Jei vartotojas nori išeiti iš programos
+    if rasta_knyga:
+        save_json(KNYGOS_FAILAS, knygos)
+        print("Knyga sėkmingai grąžinta.")
+    else:
+        print("Nerasta knyga su nurodytu kodu arba ji nėra pas jus.")
+
+def pasiimti_knyga(knygos, skaitytojai, vartotojo_numeris): 
+    if ispejimas_skaitytojui(knygos, skaitytojai, vartotojo_numeris):
+        tikrai_veluoja = []
+        for knyga in knygos['knygos']:
+            for vieta in knyga['vietos']:
+                if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta and vieta['vartotojas']['vartotojo_numeris'] == vartotojo_numeris:
+                    vartotojas = vieta['vartotojas']
+                    paemimo_data = datetime.strptime(vartotojas['paemimo_data'], '%Y-%m-%d')
+                    if (datetime.now() - paemimo_data).days > MAX_VELAVIMAS:
+                        tikrai_veluoja.append(vartotojas)   
+        for skaitytojas in tikrai_veluoja:
+            print(f"  - Vartotojo numeris: {skaitytojas['vartotojo_numeris']}, Paėmimo data: {skaitytojas['paemimo_data']}")
+    else:
+        knygos_kodas = input("Įveskite pasiimamos knygos kodą: ")
+        rasta_knyga = False
+        for knyga in knygos['knygos']:
+            if knyga['knygos_kodas'] == knygos_kodas:
+                for vieta in knyga['vietos']:
+                    if vieta['tipas'] == 'knygyne' and vieta['kiekis'] > 0:
+                        vieta['kiekis'] -= 1
+                        if vieta['kiekis'] == 0:
+                            knyga['vietos'].remove(vieta)
+                        knyga['vietos'].append({
+                            "tipas": "pas_skaitytoja",
+                            "vartotojas": {
+                                "vartotojo_numeris": vartotojo_numeris,
+                                "paemimo_data": datetime.now().strftime('%Y-%m-%d')
+                            }
+                        })
+                        rasta_knyga = True
+                        break
+                if rasta_knyga:
+                    break
+
+        if rasta_knyga:
+            save_json(KNYGOS_FAILAS, knygos)
+            print("Knyga sėkmingai pasiimta.")
+        else:
+            print("Nerasta knyga su nurodytu kodu arba nėra laisvų egzempliorių.")
+
+def skaitytojo_menu(knygos, skaitytojai, asmensduomenys):
+    while True:
+        print("\nPasirinkite veiksmą:")
+        print("1 - Grąžinti knygą")
+        print("2 - Knygyno Knygos")
+        print("3 - Mano Knygos")
+        print("4 - Atgal")
+        try:
+            veiksmas = int(input("Pasirinkimas: "))
+        except ValueError:
+            print("Įveskite galiojantį skaičių.")
+            continue
+
+        if veiksmas == 1:
+            grazinti_knyga(knygos, skaitytojai, vartotojo_numeris)
+        elif veiksmas == 2:
+            perziureti_knygos_skaitytojas(knygos, skaitytojai)
+        elif veiksmas == 3:
+            perziureti_mano_knygos(knygos, vartotojo_numeris)
+        elif veiksmas == 4:
+            break
+        else:
+            print("Neteisingas pasirinkimas. Bandykite dar kartą.")
+
+def perziureti_knygos_skaitytojas(knygos, skaitytojai):
+    while True:
+        print("\nPasirinkite peržiūros variantą:")
+        print("1 - Visų knygų knygyne sąrašas")
+        print("2 - Paieška")
+        print("3 - Pasiimti knygą")
+        print("4 - Grįžti atgal")
+        try:
+            pasirinkimas = int(input("Pasirinkimas: "))
+        except ValueError:
+            print("Įveskite galiojantį skaičių.")
+            continue
+
+        if pasirinkimas == 1:
+            visos_knygos_sarasas_skaitytojui(knygos)
+        elif pasirinkimas == 2:
+            paieska_knygose_skaitytojui(knygos)
+        elif pasirinkimas == 3:
+            pasiimti_knyga(knygos, skaitytojai, vartotojo_numeris)
+        elif pasirinkimas == 4:
+            break
+        else:
+            print("Neteisingas pasirinkimas. Bandykite dar kartą.")
+
+def perziureti_mano_knygos(knygos, vartotojo_numeris):
+    """
+    Rodo skaitytojo paimtas knygas.
+    """
+    print("Jūsų paimtos knygos:")
+    rasta_knyga = False
+    for knyga in knygos['knygos']:
+        for vieta in knyga['vietos']:
+            if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta and vieta['vartotojas']['vartotojo_numeris'] == vartotojo_numeris:
+                print(f"  - {knyga['pavadinimas']} (kodas: {knyga['knygos_kodas']})")
+                rasta_knyga = True
+    if not rasta_knyga:
+        print("Jūs neturite jokių knygų.")
+    input("Paspauskite ENTER, kad grįžti atgal.")
+
+def autentifikuoti_skaitytoja(skaitytojai):
+    """
+    Autentifikuoja skaitytoją pagal vartotojo numerį.
+    """
+    vartotojo_numeris = input("Įveskite savo vartotojo numerį: ")
+    skaitytojas = next((s for s in skaitytojai if s['vartotojo_numeris'] == vartotojo_numeris), None)
+    if skaitytojas:
+        print("Sėkmingai prisijungta kaip skaitytojas.")
+        print()
+        return skaitytojas
+    else:
+        print("Neteisingas vartotojo numeris. Bandykite dar kartą.")
+        return None
+
+def registracija_menu(skaitytojai, asmensduomenys):
+    print("\n--- Naujo skaitytojo registracija ---")
+    registruotis_skaitytojas(skaitytojai, asmensduomenys)
+
+def skaitytojo_apdorojimas(knygos, skaitytojai, asmensduomenys):
+    """
+    Apdorojama skaitytojo veikla, įskaitant registraciją ir prisijungimą.
+    """
+    while True:
+        print("\nPasirinkite veiksmą:")
+        print("1 - Naujo skaitytojo registracija")
+        print("2 - Esamas skaitytojas")
+        print("3 - Grįžti atgal")
+        try:
+            pasirinkimas = int(input("Pasirinkimas: "))
+        except ValueError:
+            print("Įveskite galiojantį skaičių.")
+            continue
+
+        if pasirinkimas == 1:
+            registracija_menu(skaitytojai, asmensduomenys)
+        elif pasirinkimas == 2:
+            skaitytojas = autentifikuoti_skaitytoja(skaitytojai)
+            if skaitytojas:
+                ispejimas_skaitytojui(knygos, skaitytojai, skaitytojas['vartotojo_numeris'])
+                global vartotojo_numeris
+                vartotojo_numeris = skaitytojas['vartotojo_numeris']
+                skaitytojo_menu(knygos, skaitytojai, asmensduomenys)
+        elif pasirinkimas == 3:
+            break
+        else:
+            print("Neteisingas pasirinkimas. Bandykite dar kartą.")
+
+
+# Pagrindinis meniu 
+def pagrindine_menu(knygos, skaitytojai, darbuotojai, asmensduomenys):
+    while True:
+        print("\nSveiki atvykę į biblioteką!")
+        print("1 - Darbuotojas")
+        print("2 - Skaitytojas")
+        print("3 - Viso Gero")
+        role = input("Pasirinkimas: ")
+
+        if role == '1':
+            darbuotojas = autentifikuoti_darbuotoja(darbuotojai)
+            if darbuotojas:
+                darbuotojo_menu(darbuotojas, knygos, skaitytojai, darbuotojai)
+        elif role == '2':
+            skaitytojo_apdorojimas(knygos, skaitytojai, asmensduomenys)
         elif role == '3':
             print("Lauksime sugrįžtant")
             break
-
-        # Jei vartotojas įveda neteisingą pasirinkimą
         else:
-            continue
-    except Exception as e:
-        print("Prašome vadovautis nurodymais ir pasirinkti vieną iš pateiktų variantų.")
-        if debuginimas == True:
-            print(f"Nenumatyta klaida: {e}")
-        continue
+            print("Neteisingas pasirinkimas. Bandykite dar kartą.")
+
+def patikrinti_velavimus(knygos, skaitytojai):
+    visi_veluojantys_skaitytojai = []
+    for knyga in knygos['knygos']:
+        for vieta in knyga['vietos']:
+            if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta:
+                vartotojas = vieta['vartotojas']
+                paemimo_data = datetime.strptime(vartotojas['paemimo_data'], '%Y-%m-%d')
+                if (datetime.now() - paemimo_data).days > MAX_VELAVIMAS:
+                    visi_veluojantys_skaitytojai.append(vartotojas)
+    
+    if visi_veluojantys_skaitytojai:
+        print("Vėluojantys skaitytojai:")
+        for skaitytojas in visi_veluojantys_skaitytojai:
+            print(f"  - Vartotojo numeris: {skaitytojas['vartotojo_numeris']}, Paėmimo data: {skaitytojas['paemimo_data']}")
+            # Rasti veluojančia knyga
+            knyga = next((k for k in knygos['knygos'] for v in k['vietos'] if v['tipas'] == 'pas_skaitytoja' and 'vartotojas' in v and v['vartotojas']['vartotojo_numeris'] == skaitytojas['vartotojo_numeris']), None)
+            if knyga:
+                print(f"    Knygos pavadinimas: {knyga['pavadinimas']}, Knygos kodas: {knyga['knygos_kodas']}")
+            # Rasti asmens duomenis
+            asmuo = next((a for a in skaitytojai if a['vartotojo_numeris'] == skaitytojas['vartotojo_numeris']), None)
+            if asmuo:
+                print(f"    Vardas: {asmuo['vardas']}, Pavardė: {asmuo['pavarde']}, "
+                      f"Kontaktinis telefonas: {asmuo['kontaktinis_telefonas']}, El. paštas: {asmuo['el_pastas']}")
+    else:
+        print("Daugiau nėra vėluojančių skaitytojų.")
+
+# ispejimas_skaitytojui jei veluoja daugiau nei MAX_VELAVIMAS ir neleidžia paiimti naujų knygų kol senos negrąžiniotos:
+def ispejimas_skaitytojui(knygos, skaitytojai, vartotojo_numeris):
+    tikrai_veluoja = []
+    for knyga in knygos['knygos']:
+        for vieta in knyga['vietos']:
+            if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta and vieta['vartotojas']['vartotojo_numeris'] == vartotojo_numeris:
+                vartotojas = vieta['vartotojas']
+                paemimo_data = datetime.strptime(vartotojas['paemimo_data'], '%Y-%m-%d')
+                if (datetime.now() - paemimo_data).days > MAX_VELAVIMAS:
+                    tikrai_veluoja.append(vartotojas)
+    
+    if tikrai_veluoja:
+        print(f"Jūs vėluojate grąžinti šias knygas:")
+        for skaitytojas in tikrai_veluoja:
+            print(f"  - Vartotojo numeris: {skaitytojas['vartotojo_numeris']}, Paėmimo data: {skaitytojas['paemimo_data']}")
+        print("Jūs negalite pasiimti naujų knygų kol nebus grąžintos senos.")
+        # negražintos knygos pavadinimas ir kodas:
+        for knyga in knygos['knygos']:
+            for vieta in knyga['vietos']:
+                if vieta['tipas'] == 'pas_skaitytoja' and 'vartotojas' in vieta and vieta['vartotojas']['vartotojo_numeris'] == vartotojo_numeris:
+                    print(f"  - {knyga['pavadinimas']} (kodas: {knyga['knygos_kodas']})")
+        return True
+    else:
+        return False    
 
 
 
+def main():
+    # Pagrindinė programos funkcija.
+    # Įkelti duomenis
+    knygos = load_json(KNYGOS_FAILAS)
+    asmensduomenys = load_json(ASMENS_DUOMENYS_FAILAS)
+    if not knygos or not asmensduomenys:
+        print("Nepavyko įkelti būtinos informacijos. Programa uždaroma.")
+        return    
+
+    skaitytojai = asmensduomenys.get('skaitytojai', [])
+    darbuotojai = asmensduomenys.get('darbuotojai', [])
+
+    # Pagrindinis meniu
+    pagrindine_menu(knygos, skaitytojai, darbuotojai, asmensduomenys)
+
+if __name__ == "__main__":
+    main()

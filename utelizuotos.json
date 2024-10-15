@@ -22,5 +22,17 @@
                 "kiekis": 100
             }
         ]
+    },
+    {
+        "knygos_kodas": "200",
+        "pavadinimas": "Nemo",
+        "leidimo_metai": 1564,
+        "zanras": "Klasika",
+        "vietos": [
+            {
+                "tipas": "knygyne",
+                "kiekis": 10
+            }
+        ]
     }
 ]
